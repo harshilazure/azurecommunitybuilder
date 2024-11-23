@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Career Path Recommender</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f4f9;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 400px;
+            max-width: 90%;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 1.8rem;
+            color: #4CAF50;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        label {
+            font-size: 1rem;
+            font-weight: bold;
+        }
+
+        input {
+            padding: 10px;
+            font-size: 1rem;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        button {
+            background: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #45a049;
+        }
+
+        .result {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 1.2rem;
+            color: #4CAF50;
+        }
+
+        .error {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 1.2rem;
+            color: #e53935;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Career Path Recommender</h1>
+        <form id="recommender-form">
+            <label for="skills">Skills:</label>
+            <input type="text" id="skills" placeholder="Enter your skills" required>
+
+            <label for="interests">Interests:</label>
+            <input type="text" id="interests" placeholder="Enter your interests" required>
+
+            <button type="submit">Get Recommendation</button>
+        </form>
+        <div id="result" class="result"></div>
+        <div id="error" class="error"></div>
+    </div>
+
+    <script>
+        const LOGIC_APP_URL = "https://prod-34.eastus.logic.azure.com:443/workflows/8eb1a445473c4be897a52c883510f760/triggers/When_a_HTTP_request_is_received/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_a_HTTP_request_is_received%2Frun&sv=1.0&sig=0ei_AS_kU7Lro_a1xY3oHScycJSGxWsgkZQHLqe6CY4";
+
+        const form = document.getElementById('recommender-form');
+        const resultDiv = document.getElementById('result');
+        const errorDiv = document.getElementById('error');
+
+        form.addEventListener('submit', async (event) => {
+            event.preventDefault();
+
+            const skills = document.getElementById('skills').value;
+            const interests = document.getElementById('interests').value;
+
+            resultDiv.textContent = '';
+            errorDiv.textContent = '';
+
+            try {
+                const response = await fetch(LOGIC_APP_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        Skills: skills,
+                        Interests: interests
+                    })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    resultDiv.textContent = `Recommended Career Path: ${data.predictions}`;
+                } else {
+                    const errorData = await response.json();
+                    errorDiv.textContent = `Error: ${errorData.error || response.statusText}`;
+                }
+            } catch (error) {
+                errorDiv.textContent = `Error: ${error.message}`;
+            }
+        });
+    </script>
+</body>
+</html>
